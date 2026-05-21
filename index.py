@@ -31,8 +31,8 @@ def validate_args(args: argparse.Namespace) -> None:
             print("Error: El número elegido (-e) debe estar en el rango de 0 a 36 para una ruleta europea.", file=sys.stderr)
             sys.exit(1)
             
-    if args.s.lower() not in ['m', 'd', 'f']:
-        print(f"Error: Estrategia (-s) no válida: '{args.s}'. Las opciones válidas son 'm' (Martingala), 'd' (D'Alembert), 'f' (Fibonacci).", file=sys.stderr)
+    if args.s.lower() not in ['m', 'd', 'f', 'l']:
+        print(f"Error: Estrategia (-s) no válida: '{args.s}'. Las opciones válidas son 'm' (Martingala), 'd' (D'Alembert), 'f' (Fibonacci), 'l' (Labouchere).", file=sys.stderr)
         sys.exit(1)
         
     if args.a.lower() not in ['i', 'f']:
@@ -58,7 +58,7 @@ def print_elegant_report(stats: dict) -> None:
     C_BOLD = "\033[1m"
     C_RESET = "\033[0m"
     
-    strategy_map = {'m': 'Martingala', 'd': "D'Alembert", 'f': 'Fibonacci'}
+    strategy_map = {'m': 'Martingala', 'd': "D'Alembert", 'f': 'Fibonacci', 'l': 'Labouchere'}
     strat = strategy_map.get(stats["strategy"].lower(), stats["strategy"])
     cap_type = "Finito" if stats["capital_type"].lower() == 'f' else "Infinito"
     bet_type = f"Pleno (No. {stats['chosen_number']})" if stats["chosen_number"] is not None else "Apuesta Sencilla (Par)"
@@ -123,7 +123,7 @@ def main() -> None:
     parser.add_argument('-c', type=int, required=True, help="Numero de corridas (simulaciones independientes)")
     parser.add_argument('-n', type=int, required=True, help="Cantidad de tiradas para cada corrida")
     parser.add_argument('-e', type=int, default=None, help="Numero elegido (0-36, apuesta a pleno). Si no se provee, se realiza apuesta sencilla (pares).")
-    parser.add_argument('-s', type=str, required=True, help="Estrategia elegida: m (Martingala), d (D'Alembert), f (Fibonacci)")
+    parser.add_argument('-s', type=str, required=True, help="Estrategia elegida: m (Martingala), d (D'Alembert), f (Fibonacci), l (Labouchere)")
     parser.add_argument('-a', type=str, required=True, help="Tipo de capital: i (infinito), f (finito)")
     
     # Argumentos adicionales convenientes y profesionales

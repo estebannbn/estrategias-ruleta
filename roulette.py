@@ -118,11 +118,50 @@ class FibonacciStrategy(BetStrategy):
         return self.current_bet
 
 
+class LabouchereStrategy(BetStrategy):
+    """Estrategia Labouchere:
+    Usa una secuencia de cancelación. La apuesta es la suma del primer y último número de la secuencia.
+    Tras ganar se eliminan ambos extremos; tras perder se añade la apuesta al final.
+    """
+    def __init__(self, base_bet: float = 1.0):
+        super().__init__(base_bet)
+        self.default_sequence = [1, 2, 3, 4]
+        self.sequence = list(self.default_sequence)
+        self._update_current_bet()
+
+    def reset(self) -> None:
+        super().reset()
+        self.sequence = list(self.default_sequence)
+        self._update_current_bet()
+
+    def _update_current_bet(self) -> None:
+        if len(self.sequence) == 0:
+            self.current_bet = self.base_bet
+        elif len(self.sequence) == 1:
+            self.current_bet = self.sequence[0] * self.base_bet
+        else:
+            self.current_bet = (self.sequence[0] + self.sequence[-1]) * self.base_bet
+
+    def get_next_bet(self, won_last_round: bool) -> float:
+        if won_last_round:
+            if len(self.sequence) >= 2:
+                self.sequence = self.sequence[1:-1]
+            else:
+                self.sequence = []
+            if len(self.sequence) == 0:
+                self.sequence = list(self.default_sequence)
+        else:
+            self.sequence.append(int(self.current_bet / self.base_bet))
+
+        self._update_current_bet()
+        return self.current_bet
+
+
 def get_strategy(strategy_code: str, base_bet: float = 1.0) -> BetStrategy:
     """Fábrica de estrategias.
     
     Args:
-        strategy_code: 'm' (martingala), 'd' (d'Alembert), 'f' (fibonacci)
+        strategy_code: 'm' (martingala), 'd' (d'Alembert), 'f' (fibonacci), 'l' (Labouchere)
         base_bet: Apuesta inicial base.
         
     Returns:
@@ -135,5 +174,7 @@ def get_strategy(strategy_code: str, base_bet: float = 1.0) -> BetStrategy:
         return DAlembertStrategy(base_bet)
     elif code == 'f':
         return FibonacciStrategy(base_bet)
+    elif code == 'l':
+        return LabouchereStrategy(base_bet)
     else:
-        raise ValueError(f"Estrategia desconocida: '{strategy_code}'. Debe ser 'm', 'd' o 'f'.")
+        raise ValueError(f"Estrategia desconocida: '{strategy_code}'. Debe ser 'm', 'd', 'f' o 'l'.")

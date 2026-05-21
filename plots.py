@@ -22,7 +22,8 @@ def generate_simulation_plots(runs_data: List[Any], stats: Dict[str, Any], filep
     strategy_name = {
         'm': 'Martingala',
         'd': "D'Alembert",
-        'f': 'Fibonacci'
+        'f': 'Fibonacci',
+        'l': 'Labouchere'
     }.get(stats["strategy"].lower(), stats["strategy"])
     
     # Calcular la probabilidad teórica de ganar
@@ -135,6 +136,27 @@ def generate_simulation_plots(runs_data: List[Any], stats: Dict[str, Any], filep
     ax2.spines['left'].set_color(grid_color)
     ax2.spines['bottom'].set_color(grid_color)
     
+    # --- INFORMACIÓN ADICIONAL: BANCARROTAS ---
+    if capital_type.lower() == 'f':
+        bankruptcy_text = (
+            f"Quiebras en capital finito:\n"
+            f"  - Total: {stats.get('bankruptcies', 0)}\n"
+            f"  - Tasa: {stats.get('bankruptcy_rate', 0) * 100:.1f}%"
+        )
+    else:
+        bankruptcy_text = "Capital infinito: no aplica bancarrota"
+
+    fig.text(
+        0.95,
+        0.55,
+        bankruptcy_text,
+        fontsize=10,
+        color=text_color,
+        ha='right',
+        va='center',
+        bbox=dict(facecolor=axes_bg, edgecolor=grid_color, boxstyle='round,pad=0.5', alpha=0.85)
+    )
+
     # --- SUPER TÍTULO GENERAL Y METADATOS ---
     cap_type_desc = "Finito" if capital_type.lower() == 'f' else "Infinito"
     super_title = f"Simulación de Ruleta Europea | Estrategia: {strategy_name} | Capital: {cap_type_desc}\n"

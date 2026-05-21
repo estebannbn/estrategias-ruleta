@@ -57,7 +57,7 @@ python index.py -c <corridas> -n <tiradas> -s <estrategia> -a <capital> [-e <num
 | `-c`      | Número de corridas (simulaciones independientes). | Sí | > 0 |
 | `-n`      | Número de tiradas por corrida. | Sí | > 0 |
 | `-e`      | Número específico a apostar (apuesta a pleno). | No | 0-36 |
-| `-s`      | Estrategia a usar. | Sí | `m` (Martingala), `d` (D'Alembert), `f` (Fibonacci) |
+| `-s`      | Estrategia a usar. | Sí | `m` (Martingala), `d` (D'Alembert), `f` (Fibonacci) | `l` (Labouchere) 
 | `-a`      | Tipo de capital. | Sí | `i` (Infinito), `f` (Finito) |
 
 ### Ejemplos de Uso
@@ -75,6 +75,10 @@ python index.py -c 5 -n 150 -a f -s f
 **3. D'Alembert con capital infinito y apuesta a pleno (número 0):**
 ```bash
 python index.py -c 20 -n 300 -e 0 -a i -s d
+```
+**4. Labouchere con capital infinito y apuesta a pleno (número 0):**
+```bash
+python index.py -c 15 -n 300 -e 0 -a i -s l
 ```
 
 ## Salida del Programa
