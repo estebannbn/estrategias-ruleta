@@ -1,0 +1,6 @@
+.venv
+__pycache__
+resultado_simulacion.png
+resultado_pleno_fibonacci.png
+resultado_martingala.png
+resultado_dalembert.png
