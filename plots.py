@@ -59,10 +59,11 @@ def generate_simulation_plots(runs_data: List[Any], stats: Dict[str, Any], filep
     plt.rcParams['ytick.color'] = muted_text
     plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial', 'sans-serif']
     
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6.5))
-    
-    # Ajustar espaciado superior e inferior para evitar superposiciones de títulos
-    fig.subplots_adjust(wspace=0.25, bottom=0.15, top=0.76, left=0.08, right=0.92)
+    fig = plt.figure(figsize=(15, 10))
+    gs = fig.add_gridspec(2, 2, height_ratios=[1, 0.65], hspace=0.28, wspace=0.25)
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax2 = fig.add_subplot(gs[0, 1])
+    ax3 = fig.add_subplot(gs[1, :])
     
     # --- GRÁFICO 1: FRECUENCIA RELATIVA ACUMULADA (frsa vs n) ---
     ax1.set_title("frsa (Frecuencia relativa de obtener la apuesta favorable según n)", 
@@ -135,27 +136,50 @@ def generate_simulation_plots(runs_data: List[Any], stats: Dict[str, Any], filep
     ax2.spines['right'].set_visible(False)
     ax2.spines['left'].set_color(grid_color)
     ax2.spines['bottom'].set_color(grid_color)
-    
-    # --- INFORMACIÓN ADICIONAL: BANCARROTAS ---
-    if capital_type.lower() == 'f':
-        bankruptcy_text = (
-            f"Quiebras en capital finito:\n"
-            f"  - Total: {stats.get('bankruptcies', 0)}\n"
-            f"  - Tasa: {stats.get('bankruptcy_rate', 0) * 100:.1f}%"
-        )
-    else:
-        bankruptcy_text = "Capital infinito: no aplica bancarrota"
 
-    fig.text(
-        0.95,
-        0.55,
-        bankruptcy_text,
-        fontsize=10,
-        color=text_color,
-        ha='right',
-        va='center',
-        bbox=dict(facecolor=axes_bg, edgecolor=grid_color, boxstyle='round,pad=0.5', alpha=0.85)
+    # --- GRÁFICO 3: APUESTA MÁXIMA ANTES DE LA QUIEBRA ---
+    max_bets = []
+    bar_colors = []
+    for run in runs_data:
+        if capital_type.lower() == 'f' and run.is_bankrupt and run.bankruptcy_spin is not None and run.bankruptcy_spin > 0:
+            max_bet = max(run.bet_history[:run.bankruptcy_spin]) if run.bet_history[:run.bankruptcy_spin] else 0.0
+        else:
+            max_bet = max(run.bet_history) if run.bet_history else 0.0
+
+        max_bets.append(max_bet)
+        if capital_type.lower() == 'f':
+            bar_colors.append('#FF6B6B' if run.is_bankrupt else '#4ECDC4')
+        else:
+            bar_colors.append('#66FCF1')
+
+    run_labels = [f"R{i+1}" for i in range(len(runs_data))]
+    ax3.bar(run_labels, max_bets, color=bar_colors, edgecolor=grid_color)
+    ax3.set_title(
+        "Apuesta máxima antes de la quiebra (capital finito)" if capital_type.lower() == 'f' else "Apuesta máxima por corrida (capital infinito)",
+        fontsize=11, fontweight='bold', color=text_color, pad=12
     )
+    ax3.set_xlabel("Corridas", fontsize=10, fontweight='bold')
+    ax3.set_ylabel("Apuesta máxima", fontsize=10, fontweight='bold')
+    ax3.grid(True, color=grid_color, linestyle=':', alpha=0.3)
+    ax3.set_facecolor(axes_bg)
+    ax3.spines['top'].set_visible(False)
+    ax3.spines['right'].set_visible(False)
+    ax3.spines['left'].set_color(grid_color)
+    ax3.spines['bottom'].set_color(grid_color)
+
+    if capital_type.lower() == 'f':
+        bankruptcies = stats.get('bankruptcies', 0)
+        ax3.text(
+            0.99,
+            0.85,
+            f"Quiebras: {bankruptcies} / {len(runs_data)}",
+            transform=ax3.transAxes,
+            fontsize=10,
+            color=text_color,
+            ha='right',
+            va='top',
+            bbox=dict(facecolor=axes_bg, edgecolor=grid_color, boxstyle='round,pad=0.4', alpha=0.9)
+        )
 
     # --- SUPER TÍTULO GENERAL Y METADATOS ---
     cap_type_desc = "Finito" if capital_type.lower() == 'f' else "Infinito"
